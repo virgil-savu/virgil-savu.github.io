@@ -493,7 +493,15 @@ function logAverageFrame(times) {   // times is the array of User Timing measure
   for (var i = numberOfEntries - 1; i > numberOfEntries - 11; i--) {
     sum = sum + times[i].duration;
   }
-  console.log("Average time to generate last 10 frames: " + sum / 10 + "ms");
+  //calculate fps
+  //calculate each frame load
+  var eachFrameLoad = 0;
+  var fps = 0;
+
+  eachFrameLoad = sum/10;
+  fps = 1000/eachFrameLoad;
+
+  console.log("Average time to generate last 10 frames: " + sum / 10 + "ms" + " - FPS:" + fps);
 }
 
 // The following code for sliding background pizzas was pulled from Ilya's demo found at:

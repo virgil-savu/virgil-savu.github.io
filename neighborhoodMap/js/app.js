@@ -1,235 +1,209 @@
-function myViewModel() {
+/* place MODEL holds all information for the Places to be displayed*/
+var Places = function () {
+
   var self = this;
-  var map;
-  var service;
-  var infowindow;
-  var lat = '';
-  var lng = '';
-  var torino = new google.maps.LatLng(45.05, 7.666667);
-  var markersArray = [];
 
-  // array that holds the info for knockout
-  self.allFoundPlaces = ko.observableArray([]);
+  self.Places = ko.observableArray();
+  self.apiError = ko.observable(false);
 
-  // string that holds forsquare information
-  self.foursquareInfo = '';
+  //IIFE to load data and set up Places Array
+  self.loadData = (function () {
 
-  // Calculates the center of the map and gets the latitude and longitude coordinates
-  function calculateCenter() {
-    var latAndLng = map.getCenter();
-      lat = latAndLng.lat();
-      lng = latAndLng.lng();
-  }
+    //Get the top 20 restaurants in Turin (Italy)
+    var clientID = 'WEBSQPECEG2Z0XV3V5ISFMCM5BQSBBPHHP4Z3C1Y23VUIEDW';
+    var clientSecret = 'OLUQRDS2HZIEWPYP5FPJLXQSZUX1SOE5BZAPEWTIXGE4GT03';
+    var lat = '45.05';
+    var lng = '7.666667';
+    var foursquareURL = 'https://api.foursquare.com/v2/venues/search?client_id='+clientID+'&client_secret='+clientSecret+'&v=20150628&ll='+lat+','+lng+'&categoryId=4d4b7105d754a06374d81259&query=Restaurant&limit=20';
 
+    $.getJSON(foursquareURL)
+            .done(function(data) {
 
-  /*
-  This function loads the map, the search bar and the list.
-  */
-  function initialize() {
-    map = new google.maps.Map(document.getElementById('map-canvas'), {
-    center: torino,
-    });
-    getPlaces();
-    calculateCenter();
+        var venues = data.response.venues;
 
-    var list = (document.getElementById('list'));
-    map.controls[google.maps.ControlPosition.RIGHT_CENTER].push(list);
-    var input = (document.getElementById('search-input'));
-    map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
-    var searchBox = new google.maps.places.SearchBox(
-      (input));
-    google.maps.event.addListener(searchBox, 'places_changed', function() {
-    //When a search is executed removes all markers and the info in allFoundPlaces.
+        $.each(data.response.venues, function(i, venues){
+          //add marker for this place
 
-      var places = searchBox.getPlaces();
-      clearAll();
-      self.allFoundPlaces.removeAll();
-      var bounds = new google.maps.LatLngBounds();
+          var marker = new google.maps.Marker({
+                        position: { lat: venues.location.lat , lng : venues.location.lng },
+                        title : venues.name,
+                        place_id: venues.id
+                      });
+          //add info window to this place
+          var streetviewImageURL = 'https://maps.googleapis.com/maps/api/streetview?size=300x150&location=' + venues.location.lat + ',' + venues.location.lng + '&heading=0&pitch=0';
+              streetviewImage = '<div><img src="' + streetviewImageURL + '" /></div>';
+          var contentString = '<p><strong>'+venues.name+ '</strong></p>';
+
+          if (venues.location.formattedAddress !== null && venues.location.formattedAddress !== undefined) {
+                        contentString += '<p>'+venues.location.formattedAddress+'</p>';
+                    }
+
+          if (venues.contact.formattedPhone !== null && venues.contact.formattedPhone !== undefined) {
+                        contentString += '<p>Phone: '+venues.contact.formattedPhone+'</p>';
+                    }
+
+              contentString += streetviewImage;
 
 
-      for(var i=0, place; i<10; i++){
-        if (places[i] !== undefined){
-          place = places[i];
-          //After the search is completed, populate markers and allFoundPlaces.
-          getallFoundPlaces(place);
-          createMarker(place);
-          bounds.extend(place.geometry.location);
+                                      //'<p>'+data.response.groups[0].items[i].venue.menu.url+'</p>'+
+
+          var infoWindow = new google.maps.InfoWindow ( {
+                            content : contentString
+                            });
+
+          self.Places.push({
+              'venue' : venues,
+              'name' : venues.name,
+              'address' : venues.location.formattedAddress,
+              'marker': marker,
+              'infowindow' : infoWindow
+          });
+        });
+
+        self.apiError(false);
+
+      }).fail(function(jqxhr, textStatus, error) {
+            var err = textStatus + ", " + error;
+            console.log("Forsquare Request Failed: " + err);
+        });
+    })();
+
+};
+
+
+var myViewModel = function () {
+
+    var self = this;
+    var map;
+    var service;
+    var infowindow;
+    var lat = '';
+    var lng = '';
+    var torino = new google.maps.LatLng(45.05, 7.666667);
+
+
+
+  //array of all the places and all info pretaining to each place such as marker, info window etc
+  self.place = ko.observable(new Places());
+
+  self.searchTerm = ko.observable('');
+
+  //controls if list is hidden or displayed
+  self.toggleListBoolean = ko.observable(true);
+
+  /* MAP */
+  self.mapOptions = {
+        //center map to Torino - Italy
+        center: torino,
+        zoom: 14
+  };
+
+  // Make sure that Google Maps API is loaded.
+  if (typeof google === 'object'  && typeof google.maps === 'object') {
+
+    self.map =  new google.maps.Map(document.getElementById('map-canvas'), self.mapOptions);
+
+
+    self.map.setCenter({ lat: 45.05, lng: 7.666667});
+
+
+
+    self.lastInfoWindow = ko.observable ('');
+
+    /* Display Filtered List, computed based on the search term*/
+    self.displayList = ko.computed ( function ( ) {
+
+        var allPlaces = self.place().Places();
+
+        if (self.searchTerm() === '') { //display default list i.e all Places
+
+          //setmap of all markers. (add all makers to this map)
+          for (var i = 0; i < allPlaces.length; i++) {
+
+              allPlaces[i].marker.setMap(this.map);
+
+              //event listener to trigger opening of infowindow
+              google.maps.event.addListener ( allPlaces[i].marker, 'click', (function(allPlacesCopy) {
+
+                return function () {
+
+                  //check if an info window is not open set this window as last open window
+                  if(self.lastInfoWindow() === ''){
+                    self.lastInfoWindow(allPlacesCopy.infowindow);
+                    allPlacesCopy.infowindow.open( self.map,this);
+                    self.map.setCenter(this.getPosition());
+                  }
+                  //lastinfowindow open close this and set current info window as lastwindow open for the next iteration
+                  else {
+
+                    self.lastInfoWindow().close();
+                    allPlacesCopy.infowindow.open( self.map,this);
+                    self.map.setCenter(this .getPosition());
+                    self.lastInfoWindow(allPlacesCopy.infowindow);
+                  }
+
+                };
+            })(allPlaces[i]) );
+
+          }
+          google.maps.event.trigger(self.map, 'resize');
+          return allPlaces;
         }
+        //search term given, filter according to this term
+        else {
+
+          var filteredList = [];
+          //search for places matching the search term
+          for (var j = 0; j<allPlaces.length; j++) {
+
+            if ( allPlaces[j]['name'].toLowerCase().indexOf(self.searchTerm().toLowerCase()) != -1 ) {
+
+                filteredList.push(allPlaces[j]);
+
+            }
+            else { //hide the marker since this is not a display list item
+
+              allPlaces[j].marker.setMap(null);
+            }
+
+          }
+        }
+
+        return filteredList; //display list will be this filtered list
+
+      },self);
+      //handle click events in the list
+    self.displayInfo = function () {
+
+      google.maps.event.trigger(this.marker, 'click');
+
+    };
+
+    //set the bounds of the map on window resize to ensure all markers are displayed
+     // make sure the map bounds get updated on page resize
+    google.maps.event.addDomListener(window, "resize", function() {
+
+      var boundbox = new google.maps.LatLngBounds();
+      for ( var i = 0; i < self.place().Places().length; i++ )
+      {
+        boundbox.extend(self.place().Places()[i].marker.getPosition());
       }
-      map.fitBounds(bounds);
-      calculateCenter();
+      self.map.setCenter(boundbox.getCenter());
+      self.map.fitBounds(boundbox);
+
     });
-    google.maps.event.addListener(map, 'bounds_changed', function(){
-      var bounds = map.getBounds();
-      searchBox.setBounds(bounds);
-    });
+
 
   }
   // Tells the user that Google Maps fails to load.
-  function failedToLoad() {
-    $('#map-canvas').html("Google Maps Failed to Load");
-  }
-
-  /*
-  Function that pre-populate the map
-  */
-  function getPlaces() {
-    var request = {
-      location: torino,
-      radius: 500,
-      types: ['pizza','ristorante', 'bar']
-    };
-
-    infowindow = new google.maps.InfoWindow();
-    service = new google.maps.places.PlacesService(map);
-    service.nearbySearch(request, callback);
-  }
-
-  /*
-  Gets the callback from Google and creates a marker for each place.
-  Sends info to getallFoundPlaces.
-  */
-  function callback(results, status){
-    if (status == google.maps.places.PlacesServiceStatus.OK){
-      bounds = new google.maps.LatLngBounds();
-      results.forEach(function (place){
-        place.marker = createMarker(place);
-        bounds.extend(new google.maps.LatLng(
-          place.geometry.location.lat(),
-          place.geometry.location.lng()));
-      });
-      map.fitBounds(bounds);
-      results.forEach(getallFoundPlaces);
-    }
-  }
-
-  /*
-  Function to create a marker at each place.
-
-  */
-  function createMarker(place) {
-    var marker = new google.maps.Marker({
-      map: map,
-      name: place.name.toLowerCase(),
-      position: place.geometry.location,
-      place_id: place.place_id
-    });
-    var address;
-    if (place.vicinity !== undefined) {
-      address = place.vicinity;
-    } else if (place.formatted_address !== undefined) {
-      address = place.formatted_address;
-    }
-    var contentString = '<div style="font-weight: bold">' + place.name + '</div><div>' + address + '</div>' + self.foursquareInfo ;
-
-    google.maps.event.addListener(marker, 'click', function() {
-      infowindow.setContent(contentString);
-      infowindow.open(map, this);
-      map.panTo(marker.position);
-
-    });
-
-    markersArray.push(marker);
-    return marker;
-  }
-
-  // Our Foursquare Credentials
-  var clientID = 'WEBSQPECEG2Z0XV3V5ISFMCM5BQSBBPHHP4Z3C1Y23VUIEDW';
-  var clientSecret = 'OLUQRDS2HZIEWPYP5FPJLXQSZUX1SOE5BZAPEWTIXGE4GT03';
-
-  this.getFoursquareInfo = function(point) {
-    // creats the foursquare URL
-    var foursquareURL = 'https://api.foursquare.com/v2/venues/search?client_id=' + clientID + '&client_secret=' + clientSecret + '&v=20150620' + '&ll=' +lat+ ',' +lng+ '&query=\'' +point.name +'\'&limit=1';
-
-    $.getJSON(foursquareURL)
-      .done(function(response) {
-        self.foursquareInfo = '<p>Info:<br>';
-        var venue = response.response.venues[0];
-
-        // Name
-        var venueName = venue.name;
-            if (venueName !== null && venueName !== undefined) {
-                self.foursquareInfo += 'Name: ' +
-                  venueName + '<br>';
-
-            }
-        // Phone Number
-        var phoneNum = venue.contact.formattedPhone;
-            if (phoneNum !== null && phoneNum !== undefined) {
-                self.foursquareInfo += 'Tel.: ' +
-                  phoneNum + '<br>';
-
-            }
-
-            if (checkIfVenues == 0){
-                self.foursquareInfo = ''; // If no info is found it doesn't display the forsquare fields
-            }
-
-      });
-
-  };
-
-  /*
-  Function that open the info window and pan to the position of the marker, when it's clicked.
-  */
-  self.clickMarker = function(place) {
-    var marker;
-
-    for(var e = 0; e < markersArray.length; e++) {
-      if(place.place_id === markersArray[e].place_id) {
-        marker = markersArray[e];
-        break;
-      }
-    }
-    self.getFoursquareInfo(place);
-    map.panTo(marker.position);
-    var currentMarkerLat = marker.position.lat();
-    var currentMarkerLng = marker.position.lng();
-    var streetviewImageURL = 'https://maps.googleapis.com/maps/api/streetview?size=300x150&location='+currentMarkerLat+','+currentMarkerLng+'&heading=0&pitch=0';
-    streetviewImage = '<div><img src="'+streetviewImageURL+'" /></div>';
-    var contentString = '<div style="font-weight: bold">' + place.name + '</div><div>' + place.address + '</div>' + self.foursquareInfo + streetviewImage;
-    infowindow.setContent(contentString);
-    infowindow.open(map, marker);
-
-
-  };
-
-
-  /*
-  Function that gets the information from all the places that we are going to search and also pre-populate.
-  */
-  function getallFoundPlaces(place){
-    var foundPlace = {};
-    foundPlace.place_id = place.place_id;
-    foundPlace.position = place.geometry.location.toString();
-    foundPlace.name = place.name;
-
-    var address;
-    if (place.vicinity !== undefined) {
-      address = place.vicinity;
-    } else if (place.formatted_address !== undefined) {
-      address = place.formatted_address;
-    }
-    foundPlace.address = address;
-
-    self.allFoundPlaces.push(foundPlace);
+  else
+  {
+   alert("Google Maps Failed to Load");
   }
 
 
-  /*
-  Function that clears any markers in the markersArray.
-  */
-  function clearAll() {
-    for (var i = 0; i < markersArray.length; i++ ) {
-     markersArray[i].setMap(null);
-    }
-    markersArray.length = 0;
-  }
 
-  google.maps.event.addDomListener(window, 'load', initialize);
-}
 
-//Execute when all scripts are loaded
-$( document ).ready(function() {
-    ko.applyBindings(new myViewModel());
-});
+};
+
+ko.applyBindings(new myViewModel());

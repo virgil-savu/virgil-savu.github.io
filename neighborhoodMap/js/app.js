@@ -1,12 +1,12 @@
-/* place MODEL holds all information for the Places to be displayed*/
+/* Create the model to hold all the informations about the locations that will be displayed*/
 var Places = function () {
 
   var self = this;
 
-  self.Places = ko.observableArray();
+  self.places = ko.observableArray();
   self.apiError = ko.observable(false);
 
-  //IIFE to load data and set up Places Array
+  //Immediately-Invoked Function Expression to set up the places array
   self.loadData = (function () {
 
     //Get the top 20 restaurants in Turin (Italy)
@@ -16,20 +16,20 @@ var Places = function () {
     var lng = '7.666667';
     var foursquareURL = 'https://api.foursquare.com/v2/venues/search?client_id='+clientID+'&client_secret='+clientSecret+'&v=20150628&ll='+lat+','+lng+'&categoryId=4d4b7105d754a06374d81259&query=Restaurant&limit=20';
 
-    $.getJSON(foursquareURL)
+ $.getJSON(foursquareURL)
             .done(function(data) {
 
         var venues = data.response.venues;
 
         $.each(data.response.venues, function(i, venues){
-          //add marker for this place
+          //Create a marker for each place
 
           var marker = new google.maps.Marker({
                         position: { lat: venues.location.lat , lng : venues.location.lng },
                         title : venues.name,
                         place_id: venues.id
                       });
-          //add info window to this place
+          //Information about the place
           var streetviewImageURL = 'https://maps.googleapis.com/maps/api/streetview?size=300x150&location=' + venues.location.lat + ',' + venues.location.lng + '&heading=0&pitch=0';
               streetviewImage = '<div><img src="' + streetviewImageURL + '" /></div>';
           var contentString = '<p><strong>'+venues.name+ '</strong></p>';
@@ -44,14 +44,11 @@ var Places = function () {
 
               contentString += streetviewImage;
 
-
-                                      //'<p>'+data.response.groups[0].items[i].venue.menu.url+'</p>'+
-
           var infoWindow = new google.maps.InfoWindow ( {
                             content : contentString
                             });
 
-          self.Places.push({
+          self.places.push({
               'venue' : venues,
               'name' : venues.name,
               'address' : venues.location.formattedAddress,
@@ -70,20 +67,14 @@ var Places = function () {
 
 };
 
-
+/*My View Model - to display the map, the list and the search input*/
 var myViewModel = function () {
 
-    var self = this;
-    var map;
-    var service;
-    var infowindow;
-    var lat = '';
-    var lng = '';
-    var torino = new google.maps.LatLng(45.05, 7.666667);
+  var self = this;
 
+  self.mapError = ko.observable(false);//0 if no error
 
-
-  //array of all the places and all info pretaining to each place such as marker, info window etc
+  //Array of all the places
   self.place = ko.observable(new Places());
 
   self.searchTerm = ko.observable('');
@@ -91,49 +82,44 @@ var myViewModel = function () {
   //controls if list is hidden or displayed
   self.toggleListBoolean = ko.observable(true);
 
-  /* MAP */
+  /* MAP Options*/
   self.mapOptions = {
-        //center map to Torino - Italy
-        center: torino,
+        //Center the map to Turin ITALY
+        center: { lat: 45.05, lng: -117.823056},
         zoom: 14
   };
 
-  // Make sure that Google Maps API is loaded.
   if (typeof google === 'object'  && typeof google.maps === 'object') {
 
-    self.map =  new google.maps.Map(document.getElementById('map-canvas'), self.mapOptions);
-
+    self.map =  new google.maps.Map(document.getElementById('map'), self.mapOptions);
 
     self.map.setCenter({ lat: 45.05, lng: 7.666667});
-
-
-
     self.lastInfoWindow = ko.observable ('');
 
-    /* Display Filtered List, computed based on the search term*/
+    //Diplay the filtered list
     self.displayList = ko.computed ( function ( ) {
 
-        var allPlaces = self.place().Places();
+        var allPlaces = self.place().places();
 
-        if (self.searchTerm() === '') { //display default list i.e all Places
+        if (self.searchTerm() === '') { //Default diplay all places
 
-          //setmap of all markers. (add all makers to this map)
+          //Add all markers to the map
           for (var i = 0; i < allPlaces.length; i++) {
 
               allPlaces[i].marker.setMap(this.map);
 
-              //event listener to trigger opening of infowindow
+              //Event trigger to open infoWindow
               google.maps.event.addListener ( allPlaces[i].marker, 'click', (function(allPlacesCopy) {
 
                 return function () {
 
-                  //check if an info window is not open set this window as last open window
+                  //Check if an info window is not open set this window as last open window
                   if(self.lastInfoWindow() === ''){
                     self.lastInfoWindow(allPlacesCopy.infowindow);
                     allPlacesCopy.infowindow.open( self.map,this);
                     self.map.setCenter(this.getPosition());
                   }
-                  //lastinfowindow open close this and set current info window as lastwindow open for the next iteration
+                  //lastinfowindow open close this and set current info window as lastwindow open
                   else {
 
                     self.lastInfoWindow().close();
@@ -149,11 +135,11 @@ var myViewModel = function () {
           google.maps.event.trigger(self.map, 'resize');
           return allPlaces;
         }
-        //search term given, filter according to this term
+        //Filter the list according to the search term
         else {
 
           var filteredList = [];
-          //search for places matching the search term
+          //Search for matching
           for (var j = 0; j<allPlaces.length; j++) {
 
             if ( allPlaces[j]['name'].toLowerCase().indexOf(self.searchTerm().toLowerCase()) != -1 ) {
@@ -161,47 +147,53 @@ var myViewModel = function () {
                 filteredList.push(allPlaces[j]);
 
             }
-            else { //hide the marker since this is not a display list item
+            else { //Hide the marker
 
               allPlaces[j].marker.setMap(null);
             }
 
           }
         }
-
-        return filteredList; //display list will be this filtered list
+        //Display yhefiltered list
+        return filteredList;
 
       },self);
-      //handle click events in the list
+      //Display infoWindow when click item in the list
     self.displayInfo = function () {
 
       google.maps.event.trigger(this.marker, 'click');
 
     };
 
-    //set the bounds of the map on window resize to ensure all markers are displayed
-     // make sure the map bounds get updated on page resize
+    //Set the bounds of the map on window resize to ensure all markers are displayed
+    // make sure the map bounds get updated on page resize
     google.maps.event.addDomListener(window, "resize", function() {
 
       var boundbox = new google.maps.LatLngBounds();
-      for ( var i = 0; i < self.place().Places().length; i++ )
+      for ( var i = 0; i < self.place().places().length; i++ )
       {
-        boundbox.extend(self.place().Places()[i].marker.getPosition());
+        boundbox.extend(self.place().places()[i].marker.getPosition());
       }
       self.map.setCenter(boundbox.getCenter());
       self.map.fitBounds(boundbox);
 
     });
-
-
+    //no error
+    self.mapError(false);
   }
-  // Tells the user that Google Maps fails to load.
+  //Error on map loading
   else
   {
-   alert("Google Maps Failed to Load");
+    self.mapError(true);
+
   }
 
+  //Hide or display list
+  self.toggleList = function () {
 
+      self.toggleListBoolean() ? self.toggleListBoolean(false) : self.toggleListBoolean(true);
+
+  };
 
 
 };

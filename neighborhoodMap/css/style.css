@@ -1,99 +1,96 @@
-html {
-    height: 100%
+html, body {
+	margin : 0px;
+	padding : 0px;
+	height : 100%;
+	width : 100%;
+	overflow : visible;
+	font-family : 'Roboto', sans-serif;
 }
 
-body {
-    height: 100%;
-    margin: 0;
-    padding: 0
+#search-div {
+	position : fixed;
+	bottom : 60px;
+	left  : 70px;
+	z-index : 100;
+	max-width : 500px;
+	max-width : 80%;
+	height : 10%;
+	padding : 2%;
 }
 
-.container {
-  height: 100%;
-  padding: 0;
-  width: 100%;
+#search-input {
+  font-size : 15px;
+  line-height : 30px;
+  width : 100%;
 }
 
-h2 {
-    text-align: center;
-    background-color: #fff;
+#list-toggle-button {
+	width : 200px;
+	height : 30px;
+	font-size: 16px;
 }
 
-ul {
-    padding: 0;
-    margin: 0;
+#map {
+	margin : 0px;
+	padding : 0px;
+	height : 100%;
+	height : 100%;
+	overflow : visible;	
 }
 
-li {
-    padding-left: 0;
-    margin: 0;
-    border-top: 2px solid #06c;
-    background-color: #fff;
+#places-list {
+	list-style : none;
+	padding : 1%;
+	text-align : left;
+    width : 250px;
+    height : 550px;
+    height : 80%;
+    overflow-x : hidden;
+    background-color : white;
+	overflow-y : auto;
+    box-shadow : 5px 5px 3px 0px rgba(50, 50, 50, 0.75);
 }
 
-li p {
-    text-align: left;
-    padding: 5px;
-    margin: 0;
+.no-result {
+	z-index : 150;
+	position : fixed;
+	top : 50px;
+	right : 80px;
 }
 
-.name {
-    font-size: 14px;
-    font-weight: bold;
+#list-item {
+	padding : 2%;
 }
 
-li:hover {
-    background-color: #9cf;
-    cursor: pointer;
+#list-item :hover {
+	font-weight : bold;
 }
 
-hr {
-    margin: 0;
-    padding: 0;
+#list-div   {
+	top : 20px;
+	right : 20px;
+	position : fixed;
+	z-index : 100;
+	overflow : visible;
+	height : 80%;
+	max-width : 40%;
 }
 
-.map {
-    display: inline-block;
-    width: 100%;
-
-
+#search {
+	font-weight : bold;
+	font-size : 24px;
+	background-color : white;
 }
 
-.searchBar {
-    margin-top: 25px;
-    border: 1px solid transparent;
-    height: 50px;
-    z-index: 100;
-    position: relative;
-}
-
-.listPlace {
-    background-color: #fff;
-    font-family: Roboto;
-    font-size: 12px;
-    font-weight: 300;
-    margin-left: 12px;
-    padding: 0;
-    max-width: 400px;
-    height: 500px;
-    overflow-x: hidden;
-    overflow-y: auto;
-    z-index: 100;
-    position: relative;
-
-
-}
-
-.searchBar {
-    background-color: #fff;
-    font-family: Roboto;
-    font-size: 20px;
-    font-weight: 300;
-    margin-left: 10px;
-    padding: 0 10px 0 10px;
-    width: 500px;
-}
-
-.searchBar:focus {
-    border-color: #09f;
+.error {
+	display : none;
+	position : fixed;
+	font-size : xx-large;
+	text-align : center;
+	left : 0px;
+	top : 0px;
+	width : 100%;
+	height : 100%;
+	z-index : 150;
+	background-color : white;
 }

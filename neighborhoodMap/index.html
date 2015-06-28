@@ -1,46 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
 
-	    <meta charset="UTF-8">
-	    <meta name="viewport" content="width=device-width">
-	    <title>AUI Neighborhood Map! Explore Irvine!!</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="css/jasny-bootstrap.min.css">
+    <title>Project 5 - Neighborhood Map</title>
+</head>
 
-	</head>
-	<body >
+<body>
+    <div class="offline-ui offline-ui-up">
+        <div class="offline-ui-content">
+        </div>
+    </div>
+    <div id="search-div">
+        <input id="search-input" data-bind="value : searchTerm" placeholder="Search..." />
+        <button type="button" id="list-toggle-button" data-bind="click : toggleList"> Show/hide list</button>
+    </div>
+    <div id="list-div" data-bind="style : { display : toggleListBoolean() ? 'block' : 'none' }">
+        <ul id="places-list" data-bind="foreach : displayList">
+            <li id="list-item" data-bind="click : $parent.displayInfo">
+                <p class="name" data-bind="text : name"></p>
+                <p class="address" data-bind="text : address"></p>
+            </li>
+        </ul>
+        <span class="no-result" data-bind="visible: !displayList().length"> No results found </span>
+    </div>
+    <div id="infoWindow"></div>
+    <div id="map-canvas"></div>
+    <script src="http://maps.googleapis.com/maps/api/js?libraries=places"></script>
+    <script src="js/lib/knockout-3.2.0.js"></script>
+    <script src="js/lib/jquery.min.js"></script>
+    <script src="js/lib/bootstrap.min.js"></script>
+    <script src="js/lib/jasny-bootstrap.min.js"></script>
+    <script src="js/app.js"></script>
+    <link href="css/style.css" rel="stylesheet" type="text/css">
+</body>
 
-
-
-		<div id = "search-div"  >
-
-		    <label id = "search"> Search for:</label> <input id = "search-input" data-bind = "value : searchTerm" />
-		    <button type="button" id="list-toggle-button" data-bind = "click : toggleList"> Toggle List Display</button>
-
-		</div>
-
-		<div id = "list-div" data-bind = "style : { display : toggleListBoolean() ? 'block' : 'none' }" >
-
-		    <ul id = "places-list" data-bind = "foreach : displayList">
-		        <li id = "list-item" data-bind = "click : $parent.displayInfo">
-		        	<p data-bind = "text : name"></p>
-		        	<p data-bind = "text : address"></p>
-		        </li>
-		    </ul>
-
-		    <span class = "no-result" data-bind = "visible: !displayList().length" > No results found </span>
-		</div>
-
-
-
-		<div id = "map">
-
-		</div>
-
-		<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?libraries=places"></script>
-		<script src="js/lib/knockout-3.2.0.js"></script>
-		<script src="js/lib/jquery.min.js"></script>
-		<script src="js/app.js"></script>
-		<link href="css/style.css" rel="stylesheet" type="text/css">
-
-	</body>
 </html>

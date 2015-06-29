@@ -1,106 +1,76 @@
-html, body {
-	margin : 0;
-	padding : 0;
-	height : 100%;
-	width : 100%;
-	overflow : visible;
-	font-family : 'Roboto', sans-serif;
+body {
+    padding: 50px 0 0 0;
 }
 
-#search-div {
-	position : fixed;
-	top : 30px;
-	right  : 0;
-	z-index : 100;
-	max-width : 250px;
-	max-width : 80%;
-	height : 10%;
-	padding : 2%;
+.map-canvas-style {
+    display: inline-block;
+    width: 100%;
 }
 
-#search-input {
-  font-size : 15px;
-  line-height : 30px;
-  width : 100%;
+.navmenu {
+    padding-top: 50px;
 }
 
-#list-toggle-button {
-	width : 200px;
-	height : 30px;
-	font-size: 16px;
+.navbar {
+    display: block;
+    text-align: center;
 }
 
-#map-canvas {
-	margin : 0;
-	padding : 0;
-	height : 100%;
-	height : 100%;
-	overflow : visible;
+.navbar-brand {
+    display: inline-block;
+    float: none;
 }
 
-#places-list {
-	list-style : none;
-	padding : 1%;
-	text-align : left;
-    width : 250px;
-    height : 550px;
-    height : 80%;
-    overflow-x : hidden;
-    background-color : white;
-	overflow-y : auto;
-    box-shadow : 5px 5px 3px 0px rgba(50, 50, 50, 0.75);
+.navbar-toggle {
+    position: absolute;
+    float: left;
+    margin-left: 15px;
+}
+
+.container {
+    max-width: 100%;
+}
+
+.container-fluid .col-sm-12 {
+    padding: 0 0 0 0;
+}
+
+.scrollable-menu {
+    height: auto;
+    max-width: 200px;
+    overflow-x: hidden;
+}
+
+.form-control {
+    width: 290px;
+}
+
+.controls {
+    margin: 10px 0 0 15px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .no-result {
-	z-index : 150;
-	position : fixed;
-	top : 50px;
-	right : 80px;
+    text-align: center;
+    font-weight: bold;
+    align-content: center;
 }
 
-#list-item {
-	padding : 2%;
-	border-bottom: solid 2px;
+@media (min-width: 1px) {
+    .navbar-toggle {
+        display: block !important;
+    }
 }
 
-#list-item :hover {
-
-    cursor: pointer;
-}
-
-#list-item .name {
-	font-weight : bold;
-}
-
-#list-item .address {
-	font-weight : normal;
-}
-
-#list-div   {
-	top : 160px;
-	right : 20px;
-	position : fixed;
-	z-index : 100;
-	overflow : visible;
-	height : 70%;
-	max-width : 40%;
-}
-
-#search {
-	font-weight : bold;
-	font-size : 24px;
-	background-color : white;
-}
-
-.error {
-	display : none;
-	position : fixed;
-	font-size : xx-large;
-	text-align : center;
-	left : 0;
-	top : 0;
-	width : 100%;
-	height : 100%;
-	z-index : 150;
-	background-color : white;
+@media (min-width: 992px) {
+    body {
+        padding: 0 300px 0 0;
+    }
+    .navmenu {
+        padding-top: 0;
+    }
+    .navbar {
+        display: none !important;
+        /* IE8 fix */
+    }
 }

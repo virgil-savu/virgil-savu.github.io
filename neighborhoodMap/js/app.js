@@ -92,7 +92,7 @@ var myViewModel = function() {
 
         center: {
             lat: 45.05,
-            lng: -117.823056
+            lng: 7.666667
         },
         zoom: 14
     };
@@ -100,6 +100,21 @@ var myViewModel = function() {
     if (typeof google === 'object' && typeof google.maps === 'object') {
 
         self.map = new google.maps.Map(document.getElementById('map-canvas'), self.mapOptions);
+
+        self.map.controls[google.maps.ControlPosition.TOP_RIGHT].push(document.getElementById('search-input'));
+
+
+        // Set map to full size and places list to full height
+        $('#map-canvas').css('height', $(window).height());
+        $('.scrollable-menu').css('max-height', $(window).height()-70);
+        $('.scrollable-menu').css('max-width', $(window).width());
+
+        // Ensure the map is full size and places list to full height after a window resize event
+        $(window).resize(function() {
+            $('#map-canvas').css('height', $(window).height());
+            $('.scrollable-menu').css('max-height', $(window).height()-70);
+            $('.scrollable-menu').css('max-width', $(window).width());
+        });
 
         self.map.setCenter({
             lat: 45.05,

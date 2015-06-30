@@ -14,7 +14,10 @@ var Places = function() {
         var clientSecret = 'OLUQRDS2HZIEWPYP5FPJLXQSZUX1SOE5BZAPEWTIXGE4GT03';
         var lat = '45.05';
         var lng = '7.666667';
-        var foursquareURL = 'https://api.foursquare.com/v2/venues/search?client_id=' + clientID + '&client_secret=' + clientSecret + '&v=20150628&ll=' + lat + ',' + lng + '&categoryId=4d4b7105d754a06374d81259&query=Restaurant&limit=20';
+        var foursquareURL = 'https://api.foursquare.com/v2/venues/search?client_id=';
+            foursquareURL += clientID + '&client_secret=';
+            foursquareURL += clientSecret + '&v=20150628&ll=' + lat + ',' + lng;
+            foursquareURL += '&categoryId=4d4b7105d754a06374d81259&query=Restaurant&limit=20';
 
         $.getJSON(foursquareURL)
             .done(function(data) {
@@ -33,7 +36,11 @@ var Places = function() {
                         place_id: venues.id
                     });
                     //Information about the place
-                    var streetviewImageURL = 'https://maps.googleapis.com/maps/api/streetview?size=300x150&location=' + venues.location.lat + ',' + venues.location.lng + '&heading=0&pitch=0';
+                    var streetviewImageURL = 'https://maps.googleapis.com/maps/api/';
+                        streetviewImageURL += 'streetview?size=300x150&location='
+                        streetviewImageURL += venues.location.lat + ',' + venues.location.lng;
+                        streetviewImageURL += '&heading=0&pitch=0';
+
                     streetviewImage = '<div><img src="' + streetviewImageURL + '" /></div>';
                     var contentString = '<p><strong>' + venues.name + '</strong></p>';
 
@@ -94,7 +101,16 @@ var myViewModel = function() {
             lat: 45.05,
             lng: 7.666667
         },
-        zoom: 14
+        zoom: 14,
+        panControl: false,
+        zoomControl: true,
+        zoomControlOptions: {
+            position: google.maps.ControlPosition.LEFT_BOTTOM
+        },
+        mapTypeControl: false,
+        scaleControl: true,
+        streetViewControl: false,
+        overviewMapControl: false
     };
 
     if (typeof google === 'object' && typeof google.maps === 'object') {
@@ -103,16 +119,17 @@ var myViewModel = function() {
 
         self.map.controls[google.maps.ControlPosition.TOP_RIGHT].push(document.getElementById('search-input'));
 
+        self.map.controls[google.maps.ControlPosition.BOTTOM_LEFT];
 
         // Set map to full size and places list to full height
         $('#map-canvas').css('height', $(window).height());
-        $('.scrollable-menu').css('max-height', $(window).height()-70);
+        $('.scrollable-menu').css('max-height', $(window).height() - 70);
         $('.scrollable-menu').css('max-width', $(window).width());
 
         // Ensure the map is full size and places list to full height after a window resize event
         $(window).resize(function() {
             $('#map-canvas').css('height', $(window).height());
-            $('.scrollable-menu').css('max-height', $(window).height()-70);
+            $('.scrollable-menu').css('max-height', $(window).height() - 70);
             $('.scrollable-menu').css('max-width', $(window).width());
         });
 
@@ -210,14 +227,6 @@ var myViewModel = function() {
         document.getElementById('map-canvas').html("Google Maps Failed to Load");
 
     }
-
-    //Hide or display list
-    self.toggleList = function() {
-
-        self.toggleListBoolean() ? self.toggleListBoolean(false) : self.toggleListBoolean(true);
-
-    };
-
 
 };
 

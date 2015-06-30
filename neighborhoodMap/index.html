@@ -2,60 +2,94 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="css/jasny-bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="css/offline-theme-slide.css">
-    <link rel="stylesheet" type="text/css" href="css/style.css">
-    <title>Neighborhood Map Project</title>
-    <script src="js/lib/jquery-1.11.3.min.js"></script>
-    <script src="js/lib/offline.js"></script>
-    <script>
-    Offline.options = {
-        checks: {
-            image: {
-                url: 'http://www.technicalstudio.it/img/logo-base.png'
-            },
-            active: 'image'
-        }
-    }
-    </script>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+	<link rel="stylesheet" href="css/jasny-bootstrap.min.css">
+	<link rel="stylesheet" href="css/offline-theme-slide.css">
+	<link rel="stylesheet" href="css/style.css">
+	<title>Neighborhood Map Project</title>
+	<script src="js/lib/jquery-1.11.3.min.js"></script>
+	<script src="js/lib/offline.js"></script>
+	<script>
+		Offline.options = {
+			checks: {
+				image: {
+					url: 'http://www.technicalstudio.it/img/logo-base.png'
+				},
+				active: 'image'
+			},
+			checkOnLoad: true,
+			interceptRequests: true,
+			reconnect: true,
+			requests: true,
+			game: false
+		}
+
+		// Events
+		Offline.on('confirmed-up', function() {
+			$('#alert-offline').modal('hide');
+		});
+
+		Offline.on('confirmed-down', function() {
+			$('#alert-offline').modal('show');
+		});
+
+	</script>
 </head>
 
 <body>
-    <div class="container-fluid">
-        <div class="row" style="height: 100%">
-            <div class="col-sm-12">
-                <div id="infoWindow"></div>
-                <div id="map-canvas" class="map-canvas-style"></div>
-            </div>
-            <div>
-                <input id="search-input" class="controls form-control" data-bind="value : searchTerm" type="text" placeholder="Search...">
-            </div>
-            <div class="navmenu navmenu-default navmenu-fixed-right offcanvas-sm">
-                <a class="navmenu-brand visible-md visible-lg" href="#">Best restaurants in the city</a>
-                <div class="nav navmenu-nav list-group scrollable-menu" data-bind="foreach: displayList">
-                    <a id="item-list" class="list-group-item" href="#" data-bind="click: $parent.displayInfo, text : name"></a>
-                </div>
-                <span class="no-result" data-bind="visible: !displayList().length"> No results found </span>
-            </div>
-            <div class="navbar navbar-default navbar-fixed-top hidden-md hidden-lg">
-                <button id="menu-button" type="button" class="navbar-toggle" data-toggle="offcanvas" data-target=".navmenu">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="#">Best restaurants in the city</a>
-            </div>
-        </div>
-        <div class="alert alert-warning offline none" style="z-index: 500;">Oops! Looks like you don't have an active internet connection.</div>
-    </div>
-    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places"></script>
-    <script src="js/lib/bootstrap.min.js"></script>
-    <script src="js/lib/jasny-bootstrap.min.js"></script>
-    <script src="js/lib/knockout-3.2.0.js"></script>
-    <script src="js/app.js"></script>
+	<div id="main-container" class="container-fluid">
+		<div class="row" style="height: 100%">
+			<div class="col-sm-12">
+				<div id="infoWindow"></div>
+				<div id="map-canvas" class="map-canvas-style"></div>
+			</div>
+			<div>
+				<input id="search-input" class="controls form-control" data-bind="value : searchTerm" type="text" placeholder="Search...">
+			</div>
+			<div class="navmenu navmenu-default navmenu-fixed-right offcanvas-sm">
+				<a class="navmenu-brand visible-md visible-lg" href="#">Best restaurants in the city</a>
+				<div class="nav navmenu-nav list-group scrollable-menu" data-bind="foreach: displayList">
+					<a id="item-list" class="list-group-item" href="#" data-bind="click: $parent.displayInfo, text : name"></a>
+				</div>
+				<span class="no-result" data-bind="visible: !displayList().length"> No results found </span>
+			</div>
+			<div class="navbar navbar-default navbar-fixed-top hidden-md hidden-lg">
+				<button id="menu-button" type="button" class="navbar-toggle" data-toggle="offcanvas" data-target=".navmenu">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="#">Best restaurants in the city</a>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal -->
+	<div class="modal fade" id="alert-offline" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title" id="myModalLabel">Offline connection</h4>
+				</div>
+				<div class="modal-body">
+					<p>Oops! Looks like you don't have an active internet connection.</p>
+					<p>Hit refresh to check if connection is back online.</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-primary" onclick="location.reload()">Refresh</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Modal -->
+	<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places"></script>
+	<script src="js/lib/bootstrap.min.js"></script>
+	<script src="js/lib/jasny-bootstrap.min.js"></script>
+	<script src="js/lib/knockout-3.2.0.js"></script>
+	<script src="js/app.js"></script>
 </body>
 
 </html>
